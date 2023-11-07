@@ -80,7 +80,7 @@ defmodule AddSpawningData do
     put_in(
       spawn_info,
       [:spec],
-      "species:#{id} palette:#{palette} level:50"
+      "species:#{id} palette:#{palette}"
     )
   end
 
@@ -88,7 +88,7 @@ defmodule AddSpawningData do
     put_in(
       spawn_info,
       [:spec],
-      "species:#{id} form:#{form} palette:#{palette} level:50"
+      "species:#{id} form:#{form} palette:#{palette}"
     )
   end
 
@@ -106,7 +106,7 @@ defmodule AddSpawningData do
 end
 
 
-json_directory = "spawning/legendaries/"
+json_directory = "spawning/standard/"
 
 IO.puts("Importing CSV data")
 pixelmon_data = AddSpawningData.import_pixelmon_data("../pixelmon-parser/pixelmon_data.csv")
@@ -137,10 +137,11 @@ pixelmon_data
                   palettes,
                   new_entries,
                   fn palette, new_entries ->
-                    biomes = Map.get(spawning_data, palette)
-                    info = AddSpawningData.create_spawn_info(spawn_info, id, form, palette, biomes)
-                    IO.inspect(info[:spec])
-                    [info | new_entries]
+                    case Map.get(spawning_data, palette) do
+                      nil -> new_entries
+                      biomes -> info = AddSpawningData.create_spawn_info(spawn_info, id, form, palette, biomes)
+                      [info | new_entries]
+                    end
                   end
                 )
               end
@@ -150,7 +151,7 @@ pixelmon_data
             update_in(data,[:spawnInfos],&(&1 ++ new_spawn_infos))
             |> Jason.encode!()
 
-          File.write("output/legendaries/#{k}.set.json", updated_json)
+          File.write("output/standard/#{k}.set.json", updated_json)
           # IO.puts("..Successfuly processed pokemon: #{k}")
           errors
     else
